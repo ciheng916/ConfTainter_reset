@@ -1,0 +1,32 @@
+# 替代方案：使用不同的基础镜像
+# 这个方案可能构建更快，因为使用了预编译的工具
+
+FROM silkeh/clang:10
+
+# 安装必要的工具
+RUN apt-get update && apt-get install -y \
+    cmake \
+    git \
+    libboost-all-dev \
+    llvm-10-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 设置工作目录
+WORKDIR /workspace
+
+# 复制项目文件
+COPY . /workspace/
+
+# 编译 ConfTainter
+WORKDIR /workspace/src
+RUN cmake \
+    -DCMAKE_CXX_COMPILER=/usr/bin/clang++-10 \
+    -DCMAKE_C_COMPILER=/usr/bin/clang-10 \
+    -DLLVM_DIR=/usr/lib/llvm-10/cmake \
+    . && \
+    make
+
+# 设置入口
+WORKDIR /workspace/src/test/demo
+CMD ["/bin/bash"]
+
